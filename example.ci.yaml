@@ -1,0 +1,46 @@
+name: CI Pipeline with Secrets, Build, and Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment (dev, staging, prod)'
+        required: true
+        default: dev
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3  # Updated from v2 to v3
+
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io docker-compose
+
+      - name: Install 1Password CLI
+        run: |
+          curl -sS https://downloads.1password.com/linux/debian/amd64/stable/1password-cli.deb -o 1password-cli.deb
+          sudo apt install ./1password-cli.deb
+          rm 1password-cli.deb
+
+      - name: Authenticate with 1Password CLI
+        env:
+          OP_CONNECT_TOKEN: ${{ secrets.OP_CONNECT_TOKEN }}  # 1Password token stored in GitHub Secrets
+        run: op signin --account my-account --shorthand my-vault
+
+      # Retrieve secrets for the specified environment
+      - name: Retrieve Secrets from 1Password
+        run: |
+          ENVIRONMENT=${{ inputs.environment }} ./scripts/retrieve_secrets.sh
+
+      - name: Build Project
+        run: bash build/build.sh
+        if: success()
+
+      - name: Run Tests
+        run: bash build/test.sh
+        if: success()
