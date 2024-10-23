@@ -1,6 +1,6 @@
-# Secrets Management Scripts
+# op auto 
 
-This repository contains scripts to securely store and retrieve sensitive files using 1Password CLI.
+op automations for full file handling tracked by list
 
 ## Usage
 
@@ -100,5 +100,3 @@ export ENVIRONMENT="development"
 ```sh
 echo "${EXPECTED_SHA256} common.sh" | sha256sum --check
 ```
-
-For more detailed documentation and examples, see the [Wiki](https://github.com/your-repo/wiki).
