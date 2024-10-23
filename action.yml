@@ -1,0 +1,34 @@
+name: "1Password Secrets Retrieval"
+description: "A GitHub Action to retrieve sensitive files listed in a file from 1Password using a service account token."
+author: "ao-e"
+
+inputs:
+  environment:
+    description: "The environment for which to retrieve secrets (e.g., dev, staging, prod)."
+    required: false
+    default: "dev"
+
+secrets:
+  OP_SERVICE_ACCOUNT_TOKEN:
+    description: "1Password Service Account token used to authenticate."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install 1Password CLI
+      run: |
+        curl -sS https://downloads.1password.com/linux/debian/amd64/stable/1password-cli.deb -o 1password-cli.deb
+        sudo apt install ./1password-cli.deb
+        rm 1password-cli.deb
+
+    - name: Retrieve sensitive files from 1Password
+      env:
+        OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        chmod +x ./scripts/*.sh
+        ./scripts/retrieve_secrets.sh
