@@ -1,0 +1,42 @@
+# .github/workflows/examples/multi-environment.yml
+name: Multi-Environment Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: 'dev'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate deployment conditions
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "prod" && "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "Production deployments must be from main branch"
+            exit 1
+          fi
+
+  secrets:
+    needs: validate
+    uses: ./.github/workflows/retrieve-secrets.yml
+    with:
+      environment: ${{ github.event.inputs.environment }}
+    secrets:
+      OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+
+  deploy:
+    needs: secrets
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Deploy to ${{ github.event.inputs.environment }}
+        run: echo "Deployment steps here"

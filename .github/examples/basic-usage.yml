@@ -1,0 +1,25 @@
+# .github/workflows/examples/basic-usage.yml
+name: Basic Secrets Setup
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: 'dev'
+
+jobs:
+  setup:
+    uses: ./.github/workflows/retrieve-secrets.yml
+    with:
+      environment: ${{ github.event.inputs.environment || 'dev' }}
+    secrets:
+      OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}

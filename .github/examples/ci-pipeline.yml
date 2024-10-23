@@ -1,0 +1,49 @@
+# .github/workflows/examples/ci-pipeline.yml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: 'dev'
+
+jobs:
+  secrets:
+    uses: ./.github/workflows/retrieve-secrets.yml
+    with:
+      environment: ${{ github.event.inputs.environment || 'dev' }}
+    secrets:
+      OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+
+  build:
+    needs: secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build application
+        run: echo "Build steps here"
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run tests
+        run: echo "Test steps here"
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy application
+        run: echo "Deploy steps here"
