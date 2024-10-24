@@ -2,9 +2,12 @@
 
 set -euo pipefail
 
+# Source common variables and functions
+source "$(dirname "$0")/common.sh"
+
 # Use the default or custom sensitive files list
-SENSITIVE_FILES_LIST="${SENSITIVE_FILES_LIST:-./.sensitive_files.txt}"
-GITIGNORE_FILE=".gitignore"
+SENSITIVE_FILES_LIST="${SENSITIVE_FILES_LIST:-$REPO_ROOT/.sensitive_files.txt}"
+GITIGNORE_FILE="$REPO_ROOT/.gitignore"
 
 # Ensure .gitignore exists
 touch "$GITIGNORE_FILE"
